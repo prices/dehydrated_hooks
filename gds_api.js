@@ -18,11 +18,10 @@ const domain = getDomain(fqdn);
 
 switch (hook) {
     case "deploy_challenge":
-        console.log({args, hook, fqdn, digest, domain });
-
+        deploy(domain, [ acmeTxtRecord(fqdn, digest) ]);
         break;
     case "clean_challenge":
-        console.log({args, hook, fqdn, digest, domain });
+        clean(domain, undefined, [ acmeTxtRecord(fqdn, digest) ]);
 
         break;
 }
@@ -52,8 +51,8 @@ function getDomain(fqdn) {
 }
 
 function token(domain) {
-    if (config.domains[domain]) {
-        return config.domain[domain];
+    if (config.domains.hasOwnProperty(domain)) {
+        return config.domains[domain];
     } else {
         console.log(`No token found for ${domain}`);
     }

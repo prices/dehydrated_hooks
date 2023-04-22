@@ -10,8 +10,8 @@ This is a hook for Google Domains ACME API.  If your domains are stored at https
 hook you need.
 
 # Pull Requests
-I welcome pull requests.
+I welcome pull requests.  In the pull request please explain exactly what the change does.  Thanks!
 
 # Notes
-I hope this is useful to you, but I don't guarantee that it will work, and I don't have the time to really do tech
-support on it that is not related to an actual bug in the code.
+I hope this is useful to you, but I don't guarantee that it will work.  I don't have the time to really do tech
+support that is not related to an actual bug in the code.

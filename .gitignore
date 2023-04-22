@@ -1,0 +1,7 @@
+accounts/
+certs/
+chains/
+dehydrated/
+config.ini
+config
+domains.txt

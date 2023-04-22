@@ -15,14 +15,16 @@ const fqdn = args[1];
 const digest = args[3];
 const domain = getDomain(fqdn);
 
-
 switch (hook) {
     case "deploy_challenge":
         deploy(domain, [ acmeTxtRecord(fqdn, digest) ]);
         break;
     case "clean_challenge":
         clean(domain, undefined, [ acmeTxtRecord(fqdn, digest) ]);
-
+        break;
+    default:
+        // Do nothing here
+        //process.stdout.write(`Unimplement hook ${hook}`);
         break;
 }
 
@@ -61,7 +63,7 @@ function token(domain) {
 
 function acmeTxtRecord(fqdn, digest) {
     return {
-        fqdn,
+        fqdn: `_acme-challenge.${fqdn}`,
         digest,
     }
 }
@@ -143,7 +145,14 @@ async function rotateChallenges(domain, add, remove, keepExpired) {
 
             res.on('end', () => {
                 try {
-                    resolve(JSON.parse(Buffer.concat(data).toString()));
+                    const ret = JSON.parse(Buffer.concat(data).toString());
+                    if (add) {
+                        const pause = 30000;
+                        process.stdout.write(`Waiting ${pause/1000}s for propigation\r\n`);
+                        setTimeout(() => resolve(ret), pause);
+                    } else {
+                        resolve(ret);
+                    }
                 } catch(e) {
                     reject(e);
                 }

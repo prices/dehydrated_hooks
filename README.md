@@ -9,6 +9,10 @@ Dehydrated can be found at https://dehydrated.io/ .
 This is a hook for Google Domains ACME API.  If your domains are stored at https://domains.google.com this is the
 hook you need.
 
+To use this, copy config.ini.dist to config.ini, making sure it is in the same directory as the script.  Then modify
+it to add your domains and their auth tokens in the "domains" section.  Information about obtaining auth tokens can
+be found here:  https://support.google.com/domains/answer/7630973?authuser=0&hl=en#acme_dns
+
 # Pull Requests
 I welcome pull requests.  In the pull request please explain exactly what the change does.  Thanks!
 

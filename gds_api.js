@@ -3,8 +3,9 @@
 const https = require('https');
 const fs = require('fs');
 const process = require('process');
+const path = require('path');
 
-const config = getConfig();
+const config = getConfig(path.dirname(fs.realpathSync(process.argv[1])));
 if (!config.domains) {
     console.log("No domains defined in config.ini");
     process.exit(1);
@@ -30,9 +31,9 @@ switch (hook) {
 
 
 
-function getConfig() {
+function getConfig(dir) {
     try {
-        return JSON.parse(fs.readFileSync("./config.ini"));
+        return JSON.parse(fs.readFileSync(path.join(dir, "config.ini")));
     } catch(e) {
         console.log(e);
     }

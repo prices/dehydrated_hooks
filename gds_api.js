@@ -33,7 +33,7 @@ switch (hook) {
         deploy(domain, [ acmeTxtRecord(fqdn, digest) ]);
         break;
     case "clean_challenge":
-        clean(domain, undefined, [ acmeTxtRecord(fqdn, digest) ]);
+        clean(domain, [ acmeTxtRecord(fqdn, digest) ]);
         break;
     default:
         // Do nothing here

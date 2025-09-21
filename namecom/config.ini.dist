@@ -1,0 +1,8 @@
+{
+    "domains": [
+        "example1.com",
+        "example2.com"
+    ],
+    "username": "youremail@example1.com",
+    "token": "This is the token"
+}

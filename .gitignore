@@ -5,3 +5,4 @@ dehydrated/
 config.ini
 config
 domains.txt
+*.swp

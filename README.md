@@ -5,7 +5,7 @@ If they work for you great!  If not, please put in a pull request.
 Dehydrated can be found at https://dehydrated.io/ .
 
 # Hooks
-## gds_api.js
+## gds/hook.js
 This is a hook for Google Domains ACME API.  If your domains are stored at https://domains.google.com this is the
 hook you need.
 

@@ -8,15 +8,17 @@
  * 
  * https://github.com/dehydrated-io/dehydrated/blob/master/docs/dns-verification.md
  * 
+ * Call with:
+ * ./hook.js deploy_challenge <fqdn> <anything> <challenge>
  */
 const https = require('https');
 const fs = require('fs');
 const process = require('process');
 const path = require('path');
-const hostname = "api.dev.name.com";
+// const hostname = "api.dev.name.com";
+const hostname = "api.name.com";
 
 const config = getConfig(path.dirname(fs.realpathSync(process.argv[1])));
-console.log(process.argv);
 
 if (!config.username && !config.token) {
     console.log("No username and/or token defined in config.ini");
@@ -24,19 +26,26 @@ if (!config.username && !config.token) {
 }
 // The first two args are the node executable and the script name.
 const args = process.argv.slice(2);
-const hook = args[0];  // The name of the hook we are running.
-const fqdn = args[1];  // The fully qualified domain name that we are updating
+const hook = args[0].toString().trim();  // The name of the hook we are running.
+const fqdn = args[1].toString().trim();  // The fully qualified domain name that we are updating
 // args[2] is not used for this hook.
-const digest = args[3]; // The digest that we need to set the txt record to
+const digest = args[3].toString().trim(); // The digest that we need to set the txt record to
 const domain = getDomain(fqdn);
+const subdomain = (fqdn.trim() === domain.trim()) ? "" : fqdn.replace("."+domain, "").trim();
 
+
+// process.exit(0);
 // Do the hooky things.
 switch (hook) {
     case "deploy_challenge":
-        deploy(domain, acmeTxtRecord(fqdn, digest));
+        deploy(domain, acmeTxtRecord(subdomain, digest)).then(() => {
+            process.exit(0);
+        }).catch(() => process.exit(1));
         break;
     case "clean_challenge":
-        clean(domain, acmeTxtRecord(fqdn, digest));
+        clean(domain, acmeTxtRecord(subdomain, digest)).then(() => {
+            process.exit(0);
+        }).catch(() => process.exit(1));
         break;
     default:
         // Do nothing here
@@ -72,10 +81,8 @@ function getConfig(dir) {
 function getDomain(fqdn) {
     if (fqdn) {
         for (const k of config.domains) {
-console.log(`Checking ${k} for ${fqdn}`);
             if (fqdn.includes(k)) {
-console.log(`Got domain ${k}`);
-                return k;
+                return k.trim();
             }
         }
     }
@@ -90,7 +97,7 @@ console.log(`Got domain ${k}`);
  */
 function auth_header(domain) {
     if (config.username && config.token) {
-        return 'Basic ' + new Buffer(config.username + ':' + config.token).toString('base64');
+        return 'Basic ' + new Buffer.from(config.username + ':' + config.token).toString('base64');
     }
     process.stderr.write(`No token found for ${domain}`);
     process.exit(1);
@@ -99,13 +106,13 @@ function auth_header(domain) {
 /**
  * Creates a text record for the update.
  * 
- * @param {*} fqdn The fqdn for the record
+ * @param {*} subdomain The subdomain for the record
  * @param {*} digest The challenge digest for the record
  * @returns The record in Googles required format.
  */
-function acmeTxtRecord(fqdn, digest) {
+function acmeTxtRecord(subdomain, digest) {
     return {
-        host: `_acme-challenge.${fqdn}.`,
+        host: `_acme-challenge${(subdomain.length > 0) ? "." + subdomain : ""}`,
         type: `TXT`,
         answer: digest,
         ttl: 300,
@@ -129,11 +136,6 @@ async function get(domain) {
         }
         const req = https.request(options, (res) => {
             let data = [];
-            /*
-            const headerDate = res.headers && res.headers.date ? res.headers.date : 'no response date';
-            console.log('Status Code:', res.statusCode);
-            console.log('Date in Response header:', headerDate);
-            */
             res.on('data', chunk => {
                 data.push(chunk);
             });
@@ -154,6 +156,27 @@ async function get(domain) {
         req.end();
     });
 }
+
+async function getHost(domain, fqdn) {
+    return new Promise((resolve, reject) => {
+        get(domain).then((res) => {
+            let record;
+            if (res.records) {
+                for (k of res.records) {
+                    if ((k.fqdn.trim() === `${fqdn.trim()}.`) || (k.fqdn.trim() === fqdn.trim())) {
+                        record = k;
+                        break;
+                    }
+                }
+            }
+            if (record) {
+                resolve(record);
+            } else {
+                reject("Not Found");
+            }
+        }).catch((e) => reject(e));
+    });
+}
 /**
  * Does the actual update of the txt records on the name.com DNS servers
  * 
@@ -166,10 +189,11 @@ async function deploy(domain, add) {
         if (add !== undefined) {
             post = { ...add };
         }
+        const path = `/v4/domains/${domain}/records`;
         const postData = JSON.stringify(post);
         const options = {
             hostname,
-            path: `/v4/domains/${domain}/records`,
+            path,
             method: `POST`,
             headers: {
                 'Content-Type': 'application/json; charset=utf-8',
@@ -215,10 +239,6 @@ async function deploy(domain, add) {
  */
 async function remove(domain, id) {
     return new Promise((resolve, reject) => {
-        if (add !== undefined) {
-            post = { ...add };
-        }
-        const postData = JSON.stringify(post);
         const options = {
             hostname,
             path: `/v4/domains/${domain}/records/${id}`,
@@ -240,5 +260,22 @@ async function remove(domain, id) {
         });
 
         req.end();
+    });
+}
+
+/**
+ * Does the actual update of the txt records on the name.com DNS servers
+ * 
+ * @param {*} domain The domain to update
+ * @param {*} id The record id to delete.
+ * @returns  A Promise to do this request.
+ */
+async function clean(domain, challenge) {
+    return new Promise((resolve, reject) => {
+        getHost(domain, `${challenge.host}.${domain}`).then((res) => {
+            remove(domain, res.id).then((res2) => {
+                resolve();
+            }).catch((e) => reject(e));
+        }).catch((e) => resolve());
     });
 }

@@ -13,6 +13,14 @@ To use this, copy config.ini.dist to config.ini, making sure it is in the same d
 it to add your domains and their auth tokens in the "domains" section.  Information about obtaining auth tokens can
 be found here:  https://support.google.com/domains/answer/7630973?authuser=0&hl=en#acme_dns
 
+## namecom/hook.js
+This is a hook for the name.com API.  If your domains are stored at https://name.com this is the
+hook you need.
+
+To use this, copy config.ini.dist to config.ini, making sure it is in the same directory as the script.  Then modify
+it to add your domains and auth tokens.  Information about obtaining auth tokens can
+be found here:  https://docs.name.com/getting-started
+
 # Pull Requests
 I welcome pull requests.  In the pull request please explain exactly what the change does.  Thanks!
 

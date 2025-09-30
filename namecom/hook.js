@@ -26,10 +26,10 @@ if (!config.username && !config.token) {
 }
 // The first two args are the node executable and the script name.
 const args = process.argv.slice(2);
-const hook = args[0].toString().trim();  // The name of the hook we are running.
-const fqdn = args[1].toString().trim();  // The fully qualified domain name that we are updating
+const hook = (args[0] || "").toString().trim();  // The name of the hook we are running.
+const fqdn = (args[1] || "").toString().trim();  // The fully qualified domain name that we are updating
 // args[2] is not used for this hook.
-const digest = args[3].toString().trim(); // The digest that we need to set the txt record to
+const digest = (args[3] || "").toString().trim(); // The digest that we need to set the txt record to
 const domain = getDomain(fqdn);
 const subdomain = (fqdn.trim() === domain.trim()) ? "" : fqdn.replace("."+domain, "").trim();
 

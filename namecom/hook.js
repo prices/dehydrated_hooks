@@ -50,6 +50,7 @@ switch (hook) {
     default:
         // Do nothing here
         //process.stdout.write(`Unimplement hook ${hook}`);
+        process.exit(0);
         break;
 }
 
